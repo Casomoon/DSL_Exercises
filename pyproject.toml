@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "dsl-exercises"
+version = "0.1.0"
+description = ""
+authors = ["Casomoon <montagcarsten@googlemail.com>"]
+readme = "README.md"
+packages = [
+    {include = "src"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "^2.5.0"
+torchvision = "^0.20.0"
+torchmetrics = "^1.5.0"
+lightning = "^2.4.0"
+matplotlib = "^3.9.2"
+
+[tool.poetry.scripts]
+u1h1 = "src.entrypoints.U1H1:main"
+u1h2 = "src.entrypoints.U1H2:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
