@@ -5,6 +5,8 @@ import numpy as np
 from pathlib import Path
 from torch import Tensor
 import seaborn as sns 
+import torch 
+from torch.utils.data import DataLoader
 
 
 def set_plt_defaults(figsize=(10,10), dpi=100):
@@ -29,6 +31,28 @@ def plot_spiral(X: Tensor,y: Tensor, auto=False, zoom=1, filename:str=None, save
     assert filename is not None
     plt.savefig(fname = save_dir/f"{filename}.png")
     plt.close()
+
+def plot_spiral_model(test_dataloader: DataLoader, model, filename):
+    model.cpu()
+    all_X = []
+    all_y = []
+    
+    for batch_X, batch_y in test_dataloader:
+        all_X.append(batch_X)
+        all_y.append(batch_y)
+    
+    # Concatenate all batches into one tensor
+    full_X = torch.cat(all_X, dim=0)
+    full_y = torch.cat(all_y, dim=0)
+    
+    mesh = np.arange(-1.1, 1.1, 0.01)
+    xx, yy = np.meshgrid(mesh, mesh)
+    with torch.no_grad():
+        data = torch.from_numpy(np.vstack((xx.reshape(-1), yy.reshape(-1))).T).float()
+        Z = model(data).detach()
+    Z = np.argmax(Z, axis=1).reshape(xx.shape)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.3)
+    plot_spiral(full_X, full_y, filename=filename)
 
 if __name__ == "__main__": 
     

@@ -20,14 +20,9 @@ class LinearWithActivation(nn.Module):
         return x    
 
 
-# chatgpt used for train_step and fit method, never used conventional pytorch, always Lightning
-from typing import Callable
-LossFunction = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
-
+# chatgpt(o1) used for train_step and fit method, never used conventional pytorch, always Lightning
 def train_step(model, batch_X, batch_y, loss_fn: torch.nn.Module, opti: torch.optim.Optimizer): 
-    running_loss = 0.0 
-    correct = 0
-    total = 0
+    
     opti.zero_grad()
     outputs = model(batch_X)
     loss: torch.Tensor = loss_fn(outputs, batch_y)
@@ -36,21 +31,30 @@ def train_step(model, batch_X, batch_y, loss_fn: torch.nn.Module, opti: torch.op
     # param update
     opti.step()
     # loss calculation for this epoch, loss this epoch * batch_size
-    running_loss+= loss.item()*batch_X.size(0)
+    loss = loss.item()*batch_X.size(0)
     predicted = torch.argmax(outputs, dim = 1)
-    correct+= (predicted == batch_y).sum().item()
-    total += batch_y.size(0)
+    correct= (predicted == batch_y).sum().item()
+    return loss, correct
      
 
-def fit(model: nn.Module, loss_fn, train_loader: torch.Tensor, epochs: int, optimizer: torch.optim.Optimizer=None,):
+def fit(model: nn.Module, loss_fn, train_loader: torch.Tensor, epochs: int, optimizer: torch.optim.Optimizer=None, logger = None):
     model.to(device)
     model.train()
     for epoch in range(epochs): 
-        epoch_loss = 0,0
+        epoch_running_loss = 0.0
         correct_preds = 0 
         total_samples  = 0
         for batch_X, batch_y in train_loader: 
             batch_X, batch_y = batch_X.to(device), batch_y.to(device)
-            pred = 
+            batch_loss, batch_correct = train_step(model, batch_X, batch_y, loss_fn, optimizer)
+            epoch_running_loss += batch_loss
+            correct_preds+= batch_correct
+            total_samples += batch_y.size(0)
+        epoch_loss = epoch_running_loss/total_samples
+        epoch_acc = correct_preds/total_samples
+        logger.info(f"Epoch [{epoch+1}/{epochs}] - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc*100:.2f}%")
+    return model
+
+
 
         

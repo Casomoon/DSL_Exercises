@@ -32,7 +32,7 @@ def train_test(X: torch.Tensor,y: torch.Tensor, test_split:int = 0.2, bs = 64)->
     num_test_samples = int(num_samples * test_split) 
     num_train_samples = num_samples -num_test_samples
     train_set, test_set = random_split(dataset, [num_train_samples, num_test_samples]) 
-    train_loader = DataLoader(train_set, batch_size=64, shuffle= True)
-    test_loader = DataLoader(test_set, batch_size=64, shuffle= True)
+    train_loader = DataLoader(train_set, batch_size=bs, shuffle= True)
+    test_loader = DataLoader(test_set, batch_size=bs, shuffle= True)
     return train_loader, test_loader
     
