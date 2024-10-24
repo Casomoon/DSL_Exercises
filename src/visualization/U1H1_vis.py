@@ -5,7 +5,16 @@ import numpy as np
 from pathlib import Path
 from torch import Tensor
 import seaborn as sns 
+
+
+def set_plt_defaults(figsize=(10,10), dpi=100):
+    plt.style.use(['dark_background', 'bmh'])
+    plt.rc('axes', facecolor='k')
+    plt.rc('figure', facecolor='k')
+    plt.rc('figure', figsize=figsize, dpi=dpi)
+
 def plot_spiral(X: Tensor,y: Tensor, auto=False, zoom=1, filename:str=None, save_dir=Path(__file__).resolve().parents[2]/"results"/"U1"/"H1"):
+    set_plt_defaults()
     X = X.cpu()
     y = y.cpu()
     cm_flare = sns.color_palette("flare", as_cmap=True)
