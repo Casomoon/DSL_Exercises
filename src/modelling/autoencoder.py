@@ -42,10 +42,29 @@ class AE_Dense(nn.Module):
 class AE_Conv(nn.Module):
     def __init__(self, input_channels: tuple[int, int])-> "AE_Conv":
         super(AE_Conv, self).__init__()
+        # formula for conv2d output size 
+        # --> stride = how many pixels are moved by the filter each step
+        # (((Input-Kernel+2Padding)/Stride)+1)
         self.encoder = nn.Sequential(
-            nn.Conv2d(input_channels, kernel_size=32, kernel_size=3, stride= 2, padding = 1)
+            nn.Conv2d(input_channels, 16, kernel_size=3, stride= 2, padding = 1),
+            # floor((28-3+2)/2)+1 13+1 = 14 
+            # --> output tensor = batch_size, 16, 14, 14
+            nn.ReLU(),
+            # number of channels goes up instead of down, 
+            nn.Conv2d(16, 32, kernel_size=3, stride = 2, padding=1),
+            # floor((14-3+2)/2)+1 = floor(13/2)+1 = 7
+            # --> output tensor = batch_size, 32, 7, 7 
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=7, stride=1)
+            # floor((7-7+0)/1)+1= 0+1
+            # --> output tensor = batch_size, 64, 1, 1 
+            # --> latent
         )
-        self.decoder = nn.Sequential() 
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(64, 32, kernel_size=7),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 16, kernel_size=3 ,stride=2, padding=1, output_padding=1)
+        ) 
 
 def train_step(model, batch_X, loss_fn: torch.nn.Module, opti: torch.optim.Optimizer): 
     opti.zero_grad()
