@@ -40,7 +40,7 @@ class AE_Dense(nn.Module):
         return pred
     
 class AE_Conv(nn.Module):
-    def __init__(self, input_channels: tuple[int, int])-> "AE_Conv":
+    def __init__(self, input_channels: int = 1)-> "AE_Conv":
         super(AE_Conv, self).__init__()
         # formula for conv2d output size 
         # --> stride = how many pixels are moved by the filter each step
@@ -60,11 +60,24 @@ class AE_Conv(nn.Module):
             # --> output tensor = batch_size, 64, 1, 1 
             # --> latent
         )
+        # output size for transposed conv 
+        # os = (W-1)*S-2P+KS+Output padding
         self.decoder = nn.Sequential(
+            # os = (1-1)*2-2+7 = 7
             nn.ConvTranspose2d(64, 32, kernel_size=7),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, 16, kernel_size=3 ,stride=2, padding=1, output_padding=1)
+            # os = (7-1)*2-2+3+1= 12-2+4 = 14
+            nn.ConvTranspose2d(32, 16, kernel_size=3 ,stride=2, padding=1, output_padding=1),
+            nn.ReLU(),
+            # os = (14-1)*2-2+3+1 = 26-2+4 = 28
+            # --> original size bs, 1, 28, 28 
+            nn.ConvTranspose2d(16, 1, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.Sigmoid() # back to range 0,1 
         ) 
+    def forward(self,x): 
+        latent = self.encoder(x)
+        rec = self.decoder(latent)
+        return rec
 
 def train_step(model, batch_X, loss_fn: torch.nn.Module, opti: torch.optim.Optimizer): 
     opti.zero_grad()
